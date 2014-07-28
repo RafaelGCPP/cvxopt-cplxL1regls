@@ -44,18 +44,33 @@ def l1regls(A, b, gamma):
     G[1::3, :n] = I 
     G[2::3, n:2*n] = I 
     G[::3, -n:] = I 
+    
+    
+    
+    def Gfun(x, y, alpha = 1.0, beta = 0.0, trans = 'N'):
+        gx=matrix(0.0,x.size)        
+        if trans=='N':
+            gx[1::3,:]=-x[  :  n,:]
+            gx[2::3,:]=-x[ n:2*n,:]
+            gx[ ::3,:]=-x[-n:   ,:]
+        elif trans=='T':
+            gx[  :  n,:]=-x[1::3,:]
+            gx[ n:2*n,:]=-x[2::3,:]
+            gx[-n:   ,:]=-x[ ::3,:]
+        y[:,:]=alpha*gx+beta*y
+        
     h = matrix(0.0, (3*n, 1)) 
 
     dims = {'l': 0, 'q': n*[3], 's': []} 
     factor=mykktchol(P)
-    sol = solvers.coneqp(P, q, G, h, dims,kktsolver=factor) 
+    sol = solvers.coneqp(P, q, Gfun, h, dims,kktsolver=factor) 
     
     return sol['x'][:n] + 1j*sol['x'][n:2*n] 
 
 if __name__ == '__main__': 
     from cvxopt.base import normal 
     from numpy.random import choice
-    m, n = 150, 90
+    m, n = 1500, 900
     
     A = normal(m,n) + 1j*normal(m,n) 
     b = normal(n,1) + 1j*normal(n,1) 

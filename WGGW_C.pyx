@@ -61,34 +61,60 @@ cdef void makeGsAndK_impl(DTYPE_t [:,:] vs,DTYPE_t [:] betas,double [:,:] WG, do
     cdef int info=0
     dpotrf('L',&n,&P[0,0],&n,&info)
 
-def GsT_mv(DTYPE_t [:,:] Gs, DTYPE_t [:,:] z, DTYPE_t [:,:] x, int sign, int n):
-    GsT_mv_impl(Gs, x, z, sign, n)
+def Gs_mv(DTYPE_t [:,:] Gs, DTYPE_t [:,:] z, DTYPE_t [:,:] x, int sign,int trans, int n):
+    Gs_mv_impl(Gs, z, x, sign, trans, n)
 
 @cython.boundscheck(False)     
-cdef GsT_mv_impl(DTYPE_t [:,:] Gs, DTYPE_t [:,:] z, DTYPE_t [:,:] x, int sign, int n):
+cdef Gs_mv_impl(DTYPE_t [:,:] Gs, DTYPE_t [:,:] z, DTYPE_t [:,:] x, int sign,int trans, int n):
     cdef Py_ssize_t rg=n/3
     cdef Py_ssize_t k=0
     
     with nogil:
         for k in range(rg):
-            if (sign>=0):
-                x[k+2*rg,1]+=Gs[3*k  , k+2*rg]*z[3*k   ,1]
-                x[k     ,1]+=Gs[3*k+1, k     ]*z[3*k+1 ,1]
-                x[k+rg  ,1]+=Gs[3*k+2, k+rg  ]*z[3*k+2 ,1]
-                x[k+2*rg,1]+=Gs[3*k+1, k+2*rg]*z[3*k+1 ,1]
-                x[k     ,1]+=Gs[3*k  , k     ]*z[3*k   ,1]
-                x[k+2*rg,1]+=Gs[3*k+2, k+2*rg]*z[3*k+2 ,1]
-                x[k+rg  ,1]+=Gs[3*k  , k+rg  ]*z[3*k   ,1]
-                x[k     ,1]+=Gs[3*k+2, k     ]*z[3*k+2 ,1]
-                x[k+rg  ,1]+=Gs[3*k+1, k+rg  ]*z[3*k+1 ,1]
+            if trans!=0:
+                if (sign>=0):
+                    x[k+2*rg,0]+=Gs[3*k  , k+2*rg]*z[3*k   ,0]
+                    x[k     ,0]+=Gs[3*k+1, k     ]*z[3*k+1 ,0]
+                    x[k+rg  ,0]+=Gs[3*k+2, k+rg  ]*z[3*k+2 ,0]
+                    x[k+2*rg,0]+=Gs[3*k+1, k+2*rg]*z[3*k+1 ,0]
+                    x[k     ,0]+=Gs[3*k  , k     ]*z[3*k   ,0]
+                    x[k+2*rg,0]+=Gs[3*k+2, k+2*rg]*z[3*k+2 ,0]
+                    x[k+rg  ,0]+=Gs[3*k  , k+rg  ]*z[3*k   ,0]
+                    x[k     ,0]+=Gs[3*k+2, k     ]*z[3*k+2 ,0]
+                    x[k+rg  ,0]+=Gs[3*k+1, k+rg  ]*z[3*k+1 ,0]
+                else:
+                    x[k+2*rg,0]-=Gs[3*k  , k+2*rg]*z[3*k   ,0]
+                    x[k     ,0]-=Gs[3*k+1, k     ]*z[3*k+1 ,0]
+                    x[k+rg  ,0]-=Gs[3*k+2, k+rg  ]*z[3*k+2 ,0]
+                    x[k+2*rg,0]-=Gs[3*k+1, k+2*rg]*z[3*k+1 ,0]
+                    x[k     ,0]-=Gs[3*k  , k     ]*z[3*k   ,0]
+                    x[k+2*rg,0]-=Gs[3*k+2, k+2*rg]*z[3*k+2 ,0]
+                    x[k+rg  ,0]-=Gs[3*k  , k+rg  ]*z[3*k   ,0]
+                    x[k     ,0]-=Gs[3*k+2, k     ]*z[3*k+2 ,0]
+                    x[k+rg  ,0]-=Gs[3*k+1, k+rg  ]*z[3*k+1 ,0]
             else:
-                x[k+2*rg,1]-=Gs[3*k  , k+2*rg]*z[3*k   ,1]
-                x[k     ,1]-=Gs[3*k+1, k     ]*z[3*k+1 ,1]
-                x[k+rg  ,1]-=Gs[3*k+2, k+rg  ]*z[3*k+2 ,1]
-                x[k+2*rg,1]-=Gs[3*k+1, k+2*rg]*z[3*k+1 ,1]
-                x[k     ,1]-=Gs[3*k  , k     ]*z[3*k   ,1]
-                x[k+2*rg,1]-=Gs[3*k+2, k+2*rg]*z[3*k+2 ,1]
-                x[k+rg  ,1]-=Gs[3*k  , k+rg  ]*z[3*k   ,1]
-                x[k     ,1]-=Gs[3*k+2, k     ]*z[3*k+2 ,1]
-                x[k+rg  ,1]-=Gs[3*k+1, k+rg  ]*z[3*k+1 ,1]
+                if (sign>=0):
+                    x[3*k  ,0]+=Gs[3*k  , k+2*rg]*z[k+2*rg ,0]
+                    x[3*k+1,0]+=Gs[3*k+1, k     ]*z[k      ,0]
+                    x[3*k+2,0]+=Gs[3*k+2, k+rg  ]*z[k+  rg ,0]
+                    x[3*k+1,0]+=Gs[3*k+1, k+2*rg]*z[k+2*rg ,0]
+                    x[3*k  ,0]+=Gs[3*k  , k     ]*z[k      ,0]
+                    x[3*k+2,0]+=Gs[3*k+2, k+2*rg]*z[k+2*rg ,0]
+                    x[3*k  ,0]+=Gs[3*k  , k+rg  ]*z[k+rg   ,0]
+                    x[3*k+2,0]+=Gs[3*k+2, k     ]*z[k      ,0]
+                    x[3*k+1,0]+=Gs[3*k+1, k+rg  ]*z[k+rg   ,0]
+                else:
+                    x[3*k  ,0]-=Gs[3*k  , k+2*rg]*z[k+2*rg ,0]
+                    x[3*k+1,0]-=Gs[3*k+1, k     ]*z[k      ,0]
+                    x[3*k+2,0]-=Gs[3*k+2, k+rg  ]*z[k+  rg ,0]
+                    x[3*k+1,0]-=Gs[3*k+1, k+2*rg]*z[k+2*rg ,0]
+                    x[3*k  ,0]-=Gs[3*k  , k     ]*z[k      ,0]
+                    x[3*k+2,0]-=Gs[3*k+2, k+2*rg]*z[k+2*rg ,0]
+                    x[3*k  ,0]-=Gs[3*k  , k+rg  ]*z[k+rg   ,0]
+                    x[3*k+2,0]-=Gs[3*k+2, k     ]*z[k      ,0]
+                    x[3*k+1,0]-=Gs[3*k+1, k+rg  ]*z[k+rg   ,0]
+
+        if sign<0:
+            for k in range(n):
+                x[k,0]=-x[k,0]
 

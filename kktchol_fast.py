@@ -75,14 +75,16 @@ def mykktchol(H):
             scale(z, W, trans = 'T', inverse = 'I')
 
             # x=x+Gs^T z
-            blas.gemv(Gs, z, x, beta = 1.0, trans = 'T', m = n)
-
-            #WGGW_C.GsT_mv(Gs, z, x, 1, n)
+#            blas.gemv(Gs, z, x, beta = 1.0, trans = 'T', m = n)          
+            WGGW_C.Gs_mv(Gs, z, x, 1,1, n)
+            
             #solve Kx
             lapack.potrs(K, x, n = n, offsetA = 0, offsetB = 0)
 
             # z=z-Gs^T x
-            blas.gemv(Gs, x, z, alpha = 1.0, beta = -1.0, m = n)
+            #blas.gemv(Gs, x, z, alpha = 1.0, beta = -1.0, m = n)
+            WGGW_C.Gs_mv(Gs, x, z, -1,0, n)
+            
 
         return solve
 
