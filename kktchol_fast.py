@@ -4,7 +4,7 @@ Created on Tue Jun 10 10:29:04 2014
 
 @author: Rafael
 """
-from cvxopt import matrix,blas,lapack
+from cvxopt import matrix,lapack
 from cvxopt.misc import scale
 import WGGW_C
 from numpy import zeros
